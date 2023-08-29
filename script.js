@@ -63,7 +63,7 @@ var validationChecker = function(url) {
         return url.replace("mediafire.com/download/" , "mediafire.com/file/");
     }
 
-    let validatedURL = validMediafireIdentifierDL.test(url) || validMediafireShortDL.test(url) || validMediafireLongDL.test(url);
+    let validatedURL = validMediafireShortDL.test(url) || validMediafireLongDL.test(url);
 
     if (url && validatedURL) {
         return url;
