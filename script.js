@@ -1,5 +1,4 @@
 const corsProxy = 'https://corsproxy.io/?';
-const validMediafireIdentifierDL = /^[a-zA-Z0-9]+$/m;
 const validMediafireShortDL = /^(https?:\/\/)?(www\.)?mediafire\.com\/\?[a-zA-Z0-9]+$/m;
 const validMediafireLongDL = /^(https?:\/\/)?(www\.)?mediafire\.com\/(file|view|download)\/[a-zA-Z0-9]+(\/[a-zA-Z0-9_~%\.\-]+)?(\/file)?$/m;
 const validMediafirePreDL = /(?<=['\"])(https?:)?(\/\/)?(www\.)?mediafire\.com\/(file|view|download)\/[^'\"\?]+\?dkey\=[^'\"]+(?=['\"])/;
@@ -23,35 +22,57 @@ window.addEventListener('load', function() {
         return;
     }
 
-    if(validationChecker(mediafireLink)){
-        attemptDownloadRedirect(mediafireLink);
+    mediafireLink = validationChecker(mediafireLink);
 
-    } else {
+    if(mediafireLink === 'a'){
         this.document.getElementById("p1").style = "display: none;";
         this.document.getElementById("p2").style = "display: none;";
         this.document.getElementById("p3").style = "";
+        return;
+    } else {
+        attemptDownloadRedirect(mediafireLink);
     }
 
 });
 
 var validationChecker = function(url) {
+
+    if(!url){
+        return 'a';
+    }
+
+    url = url.replace('http://', 'https://'); 
+    if (!checkHTTP.test(url)) {
+        if (url.startsWith('//')) url = 'https:' + url;
+        else url = 'https://' + url;
+    };
+
+
+    if(url.endsWith("/file")) url = url.substring(0, url.length - 5);
+
+
+    if(!url.startsWith("https://") && !url.startsWith("www.") && !url.startsWith("mediafire.com/")){
+        return 'https://www.mediafire.com/file/' + url;
+    }
+
+    if(url.contains("mediafire.com/view/")){
+        return url.replace("mediafire.com/view/" , "mediafire.com/file/");
+    }
+
+    if(url.contains("mediafire.com/download/")){
+        return url.replace("mediafire.com/download/" , "mediafire.com/file/");
+    }
+
     let validatedURL = validMediafireIdentifierDL.test(url) || validMediafireShortDL.test(url) || validMediafireLongDL.test(url);
+
     if (url && validatedURL) {
-        return true;
+        return url;
     } else {
-        return false;
+        return 'a';
     }
 };
 
 var attemptDownloadRedirect = async function(url) {
-
-    url = url.replace('http://', 'https://'); 
-    if (validMediafireIdentifierDL.test(url)) url = 'https://mediafire.com/?' + url;
-    if (!checkHTTP.test(url)) {
-      if (url.startsWith('//')) url = 'https:' + url;
-      else url = 'https://' + url;
-    };
-
     console.log(url);
 
     // try and get the mediafire page to get actual download link
@@ -70,7 +91,7 @@ var attemptDownloadRedirect = async function(url) {
                 if (dlPreUrls) {
                     let dlPreUrl = dlPreUrls[0];
                     return setTimeout(function() {
-                    return attemptDownloadRedirect(dlPreUrl);
+                        return attemptDownloadRedirect(dlPreUrl);
                     }, paramDL_mediafireWebDelay); // delay is required, or else Mediafire's Cloudflare protection will not connect
                 }
         
@@ -79,7 +100,6 @@ var attemptDownloadRedirect = async function(url) {
                 if (dlUrls) {
                     let dlUrl = dlUrls[0];
                     downloadFile(dlUrl);
-        
                     return dlUrl;
                 }
             }
@@ -98,7 +118,6 @@ var attemptDownloadRedirect = async function(url) {
 };
 
 var downloadFile = function(filePath) {
-    console.log(filePath);
     let downloadLinkElement = document.getElementById('dl-link');
     downloadLinkElement.href = filePath;
     downloadLinkElement.click();
