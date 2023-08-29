@@ -42,11 +42,6 @@ var validationChecker = function(url) {
     }
 
     url = url.replace('http://', 'https://'); 
-    if (!checkHTTP.test(url)) {
-        if (url.startsWith('//')) url = 'https:' + url;
-        else url = 'https://' + url;
-    };
-
 
     if(url.endsWith("/file")) url = url.substring(0, url.length - 5);
 
@@ -54,6 +49,11 @@ var validationChecker = function(url) {
     if(!url.startsWith("https://") && !url.startsWith("www.") && !url.startsWith("mediafire.com/")){
         return 'https://www.mediafire.com/file/' + url;
     }
+
+    if (!checkHTTP.test(url)) {
+        if (url.startsWith('//')) url = 'https:' + url;
+        else url = 'https://' + url;
+    };
 
     if(url.includes("mediafire.com/view/")){
         return url.replace("mediafire.com/view/" , "mediafire.com/file/");
