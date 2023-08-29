@@ -17,9 +17,9 @@ window.addEventListener('load', function() {
 
     if (mediafireLink === null || mediafireLink === undefined) {
         mediafireLink = 'a';
-        this.document.getElementById("p1").style("display: none;");
-        this.document.getElementById("p2").style("display: none;");
-        this.document.getElementById("p3").style("");
+        this.document.getElementById("p1").style = "display: none;";
+        this.document.getElementById("p2").style = "display: none;";
+        this.document.getElementById("p3").style = "";
         return;
     }
 
@@ -27,9 +27,9 @@ window.addEventListener('load', function() {
         attemptDownloadRedirect(mediafireLink);
 
     } else {
-        this.document.getElementById("p1").style("display: none;");
-        this.document.getElementById("p2").style("display: none;");
-        this.document.getElementById("p3").style("");
+        this.document.getElementById("p1").style = "display: none;";
+        this.document.getElementById("p2").style = "display: none;";
+        this.document.getElementById("p3").style = "";
     }
 
 });
@@ -82,15 +82,15 @@ var attemptDownloadRedirect = async function(url) {
                 }
             }
         }
-        this.document.getElementById("p1").style("display: none;");
-        this.document.getElementById("p2").style("display: none;");
-        this.document.getElementById("p3").style("");
+        this.document.getElementById("p1").style = "display: none;";
+        this.document.getElementById("p2").style = "display: none;";
+        this.document.getElementById("p3").style = "";
         return false;
 
     } catch (err) {
-        this.document.getElementById("p1").style("display: none;");
-        this.document.getElementById("p2").style("display: none;");
-        this.document.getElementById("p3").style("");
+        this.document.getElementById("p1").style = "display: none;";
+        this.document.getElementById("p2").style = "display: none;";
+        this.document.getElementById("p3").style = "";
         return false;
     }
 };
@@ -99,7 +99,7 @@ var downloadFile = function(filePath) {
     let downloadLinkElement = document.getElementById('dl-link');
     downloadLinkElement.href = filePath;
     downloadLinkElement.click();
-    this.document.getElementById("p1").style("display: none;");
-    this.document.getElementById("p2").style("");
-    this.document.getElementById("p3").style("display: none;");
+    this.document.getElementById("p1").style = "display: none;";
+    this.document.getElementById("p2").style = "";
+    this.document.getElementById("p3").style = "display: none;";
 };
