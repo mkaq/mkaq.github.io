@@ -1,6 +1,4 @@
 const corsProxy = 'https://corsproxy.io/?';
-const validMediafireShortDL = /^(https?:\/\/)?(www\.)?mediafire\.com\/\?[a-zA-Z0-9]+$/m;
-const validMediafireLongDL = /^(https?:\/\/)?(www\.)?mediafire\.com\/(file|view|download)\/[a-zA-Z0-9]+(\/[a-zA-Z0-9_~%\.\-]+)?(\/file)?$/m;
 const validMediafirePreDL = /(?<=['\"])(https?:)?(\/\/)?(www\.)?mediafire\.com\/(file|view|download)\/[^'\"\?]+\?dkey\=[^'\"]+(?=['\"])/;
 const validDynamicDL = /(?<=['\"])https?:\/\/download[0-9]+\.mediafire\.com\/[^'\"]+(?=['\"])/;
 const checkHTTP = /^https?:\/\//m;
@@ -15,66 +13,19 @@ window.addEventListener('load', function() {
     var mediafireLink = urlParams.get('a');
 
     if (mediafireLink === null || mediafireLink === undefined) {
-        mediafireLink = 'a';
+
         this.document.getElementById("p1").style = "display: none;";
         this.document.getElementById("p2").style = "display: none;";
         this.document.getElementById("p3").style = "";
         return;
     }
 
-    mediafireLink = validationChecker(mediafireLink);
-
-    if(mediafireLink === 'a'){
-        this.document.getElementById("p1").style = "display: none;";
-        this.document.getElementById("p2").style = "display: none;";
-        this.document.getElementById("p3").style = "";
-        return;
-    } else {
-        attemptDownloadRedirect(mediafireLink);
-    }
-
+    mediafireLink = 'https://www.mediafire.com/?' + mediafireLink;
+    attemptDownloadRedirect(mediafireLink);
+    
 });
 
-var validationChecker = function(url) {
-
-    if(!url){
-        return 'a';
-    }
-
-    url = url.replace('http://', 'https://'); 
-
-    if(url.endsWith("/file")) url = url.substring(0, url.length - 5);
-
-
-    if(!url.startsWith("https://") && !url.startsWith("www.") && !url.startsWith("mediafire.com/")){
-        return 'https://www.mediafire.com/file/' + url;
-    }
-
-    if (!checkHTTP.test(url)) {
-        if (url.startsWith('//')) url = 'https:' + url;
-        else url = 'https://' + url;
-    };
-
-    if(url.includes("mediafire.com/view/")){
-        return url.replace("mediafire.com/view/" , "mediafire.com/file/");
-    }
-
-    if(url.includes("mediafire.com/download/")){
-        return url.replace("mediafire.com/download/" , "mediafire.com/file/");
-    }
-
-    let validatedURL = validMediafireShortDL.test(url) || validMediafireLongDL.test(url);
-
-    if (url && validatedURL) {
-        return url;
-    } else {
-        return 'a';
-    }
-};
-
 var attemptDownloadRedirect = async function(url) {
-    console.log(url);
-
     // try and get the mediafire page to get actual download link
     try {
 
