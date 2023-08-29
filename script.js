@@ -15,6 +15,14 @@ window.addEventListener('load', function() {
     var urlParams = new URLSearchParams(window.location.search);
     var mediafireLink = urlParams.get('a');
 
+    if (mediafireLink === null || mediafireLink === undefined) {
+        mediafireLink = 'a';
+        this.document.getElementById("p1").style("display: none;");
+        this.document.getElementById("p2").style("display: none;");
+        this.document.getElementById("p3").style("");
+        return;
+    }
+
     if(validationChecker(mediafireLink)){
         attemptDownloadRedirect(mediafireLink);
 
