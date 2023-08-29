@@ -52,6 +52,8 @@ var attemptDownloadRedirect = async function(url) {
       else url = 'https://' + url;
     };
 
+    console.log(url);
+
     // try and get the mediafire page to get actual download link
     try {
 
