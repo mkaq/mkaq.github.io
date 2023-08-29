@@ -96,6 +96,7 @@ var attemptDownloadRedirect = async function(url) {
 };
 
 var downloadFile = function(filePath) {
+    console.log(filePath);
     let downloadLinkElement = document.getElementById('dl-link');
     downloadLinkElement.href = filePath;
     downloadLinkElement.click();
