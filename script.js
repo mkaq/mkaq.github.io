@@ -55,11 +55,11 @@ var validationChecker = function(url) {
         return 'https://www.mediafire.com/file/' + url;
     }
 
-    if(url.contains("mediafire.com/view/")){
+    if(url.includes("mediafire.com/view/")){
         return url.replace("mediafire.com/view/" , "mediafire.com/file/");
     }
 
-    if(url.contains("mediafire.com/download/")){
+    if(url.includes("mediafire.com/download/")){
         return url.replace("mediafire.com/download/" , "mediafire.com/file/");
     }
 
