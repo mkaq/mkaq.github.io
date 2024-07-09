@@ -29,7 +29,11 @@ var attemptDownloadRedirect = async function(url) {
     // try and get the mediafire page to get actual download link
     try {
 
-        let mediafirePageResponse = await fetch(corsProxy+encodeURIComponent(url));
+        let mediafirePageResponse = await fetch(corsProxy+encodeURIComponent(url), {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
         
         // make sure the response was ok
         if (await mediafirePageResponse.ok) {
