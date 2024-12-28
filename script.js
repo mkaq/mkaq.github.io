@@ -1,78 +1,68 @@
-const corsProxy = 'https://corsproxy.io/?';
-const validMediafirePreDL = /(?<=['\"])(https?:)?(\/\/)?(www\.)?mediafire\.com\/(file|view|download)\/[^'\"\?]+\?dkey\=[^'\"]+(?=['\"])/;
-const validDynamicDL = /(?<=['\"])https?:\/\/download[0-9]+\.mediafire\.com\/[^'\"]+(?=['\"])/;
-const checkHTTP = /^https?:\/\//m;
-const paramDL_initialDelay = 50; // ms
-const paramDL_loadDelay = 750; // ms
-const paramDL_mediafireWebDelay = 1500; // ms; Mediafire's specified delay is 1000ms to redirect to parametered download URLs, and needs another 500ms to time things properly
+var proxy = 'https://corsproxy.io/?';
+const fallback = "https://api.allorigins.win/raw?url="
+const validDynamicDL = /https?:\/\/download[0-9]+\.mediafire\.com\/[^\s"']+/;
+const paramDL_mediafireWebDelay = 1500;
+
+const p1 = document.getElementById("p1");
+const p2 = document.getElementById("p2");
+const p3 = document.getElementById("p3");
+const p4 = document.getElementById("p4");
 
 
-window.addEventListener('load', function() {
-    // Get the mediafire link parameter from the URL
-    var urlParams = new URLSearchParams(window.location.search);
-    var mediafireLink = urlParams.get('a');
 
-    if (mediafireLink === null || mediafireLink === undefined) {
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mediafireLink = urlParams.get('a');
 
-        this.document.getElementById("p1").style = "display: none;";
-        this.document.getElementById("p2").style = "display: none;";
-        this.document.getElementById("p3").style = "";
+    if (!mediafireLink) {
+        p1.style.display = "none";
+        p2.style.display = "block";
+        p3.style.display = "none";
+        p4.style.display = "none";
         return;
     }
 
-    mediafireLink = 'https://www.mediafire.com/?' + mediafireLink;
-    attemptDownloadRedirect(mediafireLink);
-    
+    const useFallback = urlParams.get('f');
+    if(useFallback && useFallback === "true"){
+        proxy = fallback;
+    }
+
+    const fullMediafireLink = `https://www.mediafire.com/?${mediafireLink}`;
+    document.getElementById("mf-link").href = fullMediafireLink;
+    handleMediafireRedirect(fullMediafireLink);
 });
 
-var attemptDownloadRedirect = async function(url) {
-    // try and get the mediafire page to get actual download link
+async function handleMediafireRedirect(url) {
     try {
 
-        let mediafirePageResponse = await fetch(corsProxy+encodeURIComponent(url));
-        
-        // make sure the response was ok
-        if (await mediafirePageResponse.ok) {
-            let data = await mediafirePageResponse.text();
-    
-            // if we received a page
-            if (data) {
-                // check if download parameter link was instead used on website
-                let dlPreUrls = data.match(validMediafirePreDL);
-                if (dlPreUrls) {
-                    let dlPreUrl = dlPreUrls[0];
-                    return setTimeout(function() {
-                        return attemptDownloadRedirect(dlPreUrl);
-                    }, paramDL_mediafireWebDelay); // delay is required, or else Mediafire's Cloudflare protection will not connect
-                }
-        
-                // we try to find URL by regex matching
-                let dlUrls = data.match(validDynamicDL);
-                if (dlUrls) {
-                    let dlUrl = dlUrls[0];
-                    downloadFile(dlUrl);
-                    return dlUrl;
-                }
-            }
+        const response = await fetch(proxy + encodeURIComponent(url));
+        if (!response.ok) throw new Error("Failed to fetch Mediafire page.");
+
+        const pageContent = await response.text();
+        const downloadMatch = pageContent.match(validDynamicDL);
+
+        if (downloadMatch) {
+            const downloadUrl = downloadMatch[0];
+            setTimeout(() => triggerDownload(downloadUrl), paramDL_mediafireWebDelay);
+        } else {
+            throw new Error("No valid download link found.");
         }
-        this.document.getElementById("p1").style = "display: none;";
-        this.document.getElementById("p2").style = "display: none;";
-        this.document.getElementById("p3").style = "";
-        return false;
-
-    } catch (err) {
-        this.document.getElementById("p1").style = "display: none;";
-        this.document.getElementById("p2").style = "display: none;";
-        this.document.getElementById("p3").style = "";
-        return false;
+    } catch (error) {
+        console.error(error);
+        p1.style.display = "none";
+        p2.style.display = "none";
+        p3.style.display = "none";
+        p4.style.display = "block";
     }
-};
+}
 
-var downloadFile = function(filePath) {
-    let downloadLinkElement = document.getElementById('dl-link');
+function triggerDownload(filePath) {
+    const downloadLinkElement = document.getElementById('dl-link');
     downloadLinkElement.href = filePath;
     downloadLinkElement.click();
-    this.document.getElementById("p1").style = "display: none;";
-    this.document.getElementById("p2").style = "";
-    this.document.getElementById("p3").style = "display: none;";
-};
+
+    p1.style.display = "none";
+    p2.style.display = "none";
+    p3.style.display = "block";
+    p4.style.display = "none";
+}
