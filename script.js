@@ -1,6 +1,7 @@
 var proxy = 'https://corsproxy.io/?';
 const fallback = "https://api.allorigins.win/raw?url="
-const validDynamicDL = /https?:\/\/download[0-9]+\.mediafire\.com\/[^\s"']+/;
+const validPattern = /https?:\/\/download[0-9]+\.mediafire\.com\/[^\s"']+/;
+const scrambledPattern = /data-scrambled-url="([^"]+)"/;
 const paramDL_mediafireWebDelay = 1500;
 
 const p1 = document.getElementById("p1");
@@ -34,19 +35,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function handleMediafireRedirect(url) {
     try {
-
         const response = await fetch(proxy + encodeURIComponent(url));
-        if (!response.ok) throw new Error("Failed to fetch Mediafire page.");
+        if (!response.ok) throw new Error("Failed to fetch MediaFire page.");
 
         const pageContent = await response.text();
-        const downloadMatch = pageContent.match(validDynamicDL);
+        let downloadUrl = null;
 
-        if (downloadMatch) {
-            const downloadUrl = downloadMatch[0];
-            setTimeout(() => triggerDownload(downloadUrl), paramDL_mediafireWebDelay);
-        } else {
-            throw new Error("No valid download link found.");
+        // check for direct download link in content
+        const directMatch = pageContent.match(validDynamicDL);
+        if (directMatch) {
+            downloadUrl = directMatch[0];
         }
+
+        // check for decoded link
+        if (!downloadUrl) {
+            const scrambledMatch = pageContent.match(scrambledPattern);
+            if (scrambledMatch) {
+                const scrambled = scrambledMatch[1];
+                const decodedUrl = atob(scrambled);
+                const decodedMatch = decodedUrl.match(validDynamicDL);
+                if (decodedMatch) {
+                    downloadUrl = decodedMatch[0];
+                }
+            }
+        }
+
+        if (!downloadUrl) {
+            throw new Error("No valid download link found.");
+        } else {
+            setTimeout(() => triggerDownload(downloadUrl), paramDL_mediafireWebDelay);
+        }        
+
     } catch (error) {
         console.error(error);
         p1.style.display = "none";
