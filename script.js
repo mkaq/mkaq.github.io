@@ -42,7 +42,7 @@ async function handleMediafireRedirect(url) {
         let downloadUrl = null;
 
         // check for direct download link in content
-        const directMatch = pageContent.match(validDynamicDL);
+        const directMatch = pageContent.match(validPattern);
         if (directMatch) {
             downloadUrl = directMatch[0];
         }
@@ -53,7 +53,7 @@ async function handleMediafireRedirect(url) {
             if (scrambledMatch) {
                 const scrambled = scrambledMatch[1];
                 const decodedUrl = atob(scrambled);
-                const decodedMatch = decodedUrl.match(validDynamicDL);
+                const decodedMatch = decodedUrl.match(validPattern);
                 if (decodedMatch) {
                     downloadUrl = decodedMatch[0];
                 }
