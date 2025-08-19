@@ -1,5 +1,7 @@
-var proxy = 'https://corsproxy.io/?';
-const fallback = "https://api.allorigins.win/raw?url="
+const proxies = [
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+];
 const validPattern = /https?:\/\/download[0-9]+\.mediafire\.com\/[^\s"']+/;
 const scrambledPattern = /data-scrambled-url="([^"]+)"/;
 const paramDL_mediafireWebDelay = 1500;
@@ -8,8 +10,6 @@ const p1 = document.getElementById("p1");
 const p2 = document.getElementById("p2");
 const p3 = document.getElementById("p3");
 const p4 = document.getElementById("p4");
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,22 +23,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const useFallback = urlParams.get('f');
-    if(useFallback && useFallback === "true"){
-        proxy = fallback;
-    }
-
     const fullMediafireLink = `https://www.mediafire.com/?${mediafireLink}`;
     document.getElementById("mf-link").href = fullMediafireLink;
     handleMediafireRedirect(fullMediafireLink);
 });
 
+async function fetchContent(url) {
+    for (let buildProxy of proxies) {
+        try {
+            const response = await fetch(buildProxy(url));
+            if (!response.ok) throw new Error("Proxy failed: " + buildProxy(url));
+            return await response.text();
+        } catch (e) {
+            console.warn("Proxy failed, trying next. Error:", e);
+        }
+    }
+    throw new Error("Failed to load MediaFire page. All proxies failed.");
+}
+
 async function handleMediafireRedirect(url) {
     try {
-        const response = await fetch(proxy + encodeURIComponent(url));
-        if (!response.ok) throw new Error("Failed to fetch MediaFire page.");
-
-        const pageContent = await response.text();
+        const pageContent = await fetchContent(url);
         let downloadUrl = null;
 
         // check for direct download link in content
