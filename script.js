@@ -4,6 +4,7 @@ const proxies = [
 ];
 const validPattern = /https?:\/\/download[0-9]+\.mediafire\.com\/[^\s"']+/;
 const scrambledPattern = /data-scrambled-url="([^"]+)"/;
+const mobileRedirectPattern = /href="(\/\/www\.mediafire\.com\/\?[^"]+)"/;
 const paramDL_mediafireWebDelay = 1500;
 
 const p1 = document.getElementById("p1");
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fullMediafireLink = `https://www.mediafire.com/?${mediafireLink}`;
     document.getElementById("mf-link").href = fullMediafireLink;
-    handleMediafireRedirect(fullMediafireLink);
+    handleMediafireRedirect(fullMediafireLink, 0);
 });
 
 async function fetchContent(url) {
@@ -41,7 +42,7 @@ async function fetchContent(url) {
     throw new Error("Failed to load MediaFire page. All proxies failed.");
 }
 
-async function handleMediafireRedirect(url) {
+async function handleMediafireRedirect(url, depth = 0) {
     try {
         const pageContent = await fetchContent(url);
         let downloadUrl = null;
@@ -62,6 +63,16 @@ async function handleMediafireRedirect(url) {
                 if (decodedMatch) {
                     downloadUrl = decodedMatch[0];
                 }
+            }
+        }
+
+        // check for mobile redirect href
+        if (!downloadUrl && depth < 2) {
+            const mobileMatch = pageContent.match(mobileRedirectPattern);
+            if (mobileMatch) {
+                const mobileUrl = mobileMatch[1].startsWith("//") ? "https:" + mobileMatch[1] : mobileMatch[1];
+                console.log("Mobile Link found:", mobileUrl);
+                return handleMediafireRedirect(mobileUrl, depth + 1);
             }
         }
 
